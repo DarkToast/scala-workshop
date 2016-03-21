@@ -1,5 +1,7 @@
 package section1
 
+import scala.annotation.tailrec
+
 object Collections {
 
   /**
@@ -9,7 +11,7 @@ object Collections {
     * @param input The repeated parameter is also a `Seq[String]`.
     * @return `Seq` ist the base class of Array or List.
     */
-  def toUpper(input: String*): Seq[String] = ???
+  def toUpper(input: String*): Seq[String] = input.map(_.toUpperCase)
 
   /**
     * Concatenates every String in the parameter array with the
@@ -19,7 +21,7 @@ object Collections {
     * @param separator
     * @return The concatenated String
     */
-  def concatenate(input: Array[String], separator: Char): String = ???
+  def concatenate(input: Array[String], separator: Char): String = input.mkString(separator.toString)
 
   /**
     * Sums all integers of the `values` list.
@@ -27,7 +29,7 @@ object Collections {
     * @param values
     * @return
     */
-  def sum(values: List[Int]): Int = ???
+  def sum(values: List[Int]): Int = values.sum
 
   /**
     * `fold` takes a list of integers and a concatenation function, so that
@@ -38,7 +40,16 @@ object Collections {
     * @param concat
     * @return
     */
-  def fold(values: List[Int], concat: (Int, Int) => Int): Int = ???
+  def fold(values: List[Int], concat: (Int, Int) => Int): Int = {
+
+    @tailrec
+    def step(acc: Int, list: List[Int]): Int = {
+      if(list.isEmpty) acc
+      else step(concat(acc, list.head), list.tail)
+    }
+
+    step(values.head, values.tail)
+  }
 
   /**
     * Extracts the words from a sequence of strings. e.g.:
@@ -47,7 +58,7 @@ object Collections {
     * @param strings
     * @return
     */
-  def extractWords(strings: Seq[String]): Seq[String] = ???
+  def extractWords(strings: Seq[String]): Seq[String] = strings.flatMap(s => s.split(" "))
 
   /**
     * Counts the words of all strings in the `strings` sequence. e.g:
@@ -58,5 +69,9 @@ object Collections {
     * @param strings
     * @return
     */
-  def wordCount(strings: Seq[String]): Map[String, Int] = ???
+  def wordCount(strings: Seq[String]): Map[String, Int] = {
+    extractWords(strings)
+      .groupBy(s => s)
+      .mapValues(list => list.size)
+  }
 }

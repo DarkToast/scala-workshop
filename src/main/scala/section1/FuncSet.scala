@@ -1,5 +1,8 @@
 package section1
 
+import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
+
 object FuncSet {
 
   /**
@@ -34,7 +37,7 @@ object FuncSet {
     * @param element
     * @return
     */
-  def contains(s: Set, element: Int): Boolean = ???
+  def contains(s: Set, element: Int): Boolean = s(element)
 
   /**
     * Union gibt ein neues Set zurück, welches alle Elemente
@@ -44,7 +47,7 @@ object FuncSet {
     * @param t
     * @return
     */
-  def union(s: Set, t: Set): Set = ???
+  def union(s: Set, t: Set): Set = i => s(i) || t(i)
 
   /**
     * Intersect gibt ein neues Set zurück, welches
@@ -55,7 +58,7 @@ object FuncSet {
     * @param t
     * @return
     */
-  def intersect(s: Set, t: Set): Set = ???
+  def intersect(s: Set, t: Set): Set = i => s(i) && t(i)
 
   /**
     * Diff gibt ein neues Set zurück, welches alle Elemente
@@ -65,7 +68,7 @@ object FuncSet {
     * @param t
     * @return
     */
-  def diff(s: Set, t: Set): Set = ???
+  def diff(s: Set, t: Set): Set = i => s(i) && !t(i)
 
   /**
     * Filter gibt ein neues Set zurück, welches alle Elemente
@@ -75,7 +78,7 @@ object FuncSet {
     * @param f
     * @return
     */
-  def filter(s: Set, f: Int => Boolean): Set = ???
+  def filter(s: Set, f: Int => Boolean): Set = i => s(i) && f(i)
 
 
   /**
@@ -94,7 +97,16 @@ object FuncSet {
     * @param p
     * @return
     */
-  def forall(s: Set, p: Int => Boolean): Boolean = ???
+  def forall(s: Set, p: Int => Boolean): Boolean = {
+    @tailrec
+    def step(acc: Boolean, iter: Int): Boolean = {
+      if(iter >= bound) acc
+      else if(contains(s, iter)) step(acc && p(iter), iter + 1)
+      else step(acc, iter + 1)
+    }
+
+    step(true, -bound)
+  }
 
   /**
     * Exists prüft ob mindestens ein Element im Set auf das Prädikat
@@ -104,7 +116,17 @@ object FuncSet {
     * @param p
     * @return
     */
-  def exists(s: Set, p: Int => Boolean): Boolean = ???
+  def exists(s: Set, p: Int => Boolean): Boolean = {
+    @tailrec
+    def step(acc: Boolean, iter: Int): Boolean = {
+      if(iter >= bound) acc
+      else if(contains(s, iter)) step(acc || p(iter), iter + 1)
+      else step(acc, iter + 1)
+    }
+
+    step(false, -bound)
+  }
+
 
   /**
     * Map gibt ein neues Set zurück, bei dem jedes Element im Set
@@ -115,7 +137,16 @@ object FuncSet {
     * @param f
     * @return
     */
-  def map(s: Set, f: Int => Int): Set = ???
+  def map(s: Set, f: Int => Int): Set = {
+    @tailrec
+    def step(acc: Set, iter: Int): Set = {
+      if(iter >= bound) acc
+      else if(contains(s, iter)) step(union(acc, singleSet(f(iter))), iter + 1)
+      else step(acc, iter + 1)
+    }
+
+    step(emptySet, -bound)
+  }
 
   /**
     * toString liefert eine Stringrepräsentation des Sets.
@@ -124,6 +155,15 @@ object FuncSet {
     * @param s
     * @return
     */
-  def createString(s: Set): String = ???
+  def createString(s: Set): String = {
+    @tailrec
+    def step(acc: ListBuffer[String], iter: Int): ListBuffer[String] = {
+      if (iter >= bound) acc
+      else if (contains(s, iter)) step(acc += iter.toString, iter + 1)
+      else step(acc, iter + 1)
+    }
+
+    "{" + step(new ListBuffer(), -bound).mkString(", ") + "}"
+  }
 
 }
