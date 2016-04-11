@@ -29,7 +29,15 @@ object Collections {
     * @param values
     * @return
     */
-  def sum(values: List[Int]): Int = values.sum
+  def sum(values: List[Int]): Int = {
+    @tailrec
+    def step(acc: Int, rest: List[Int]): Int = {
+      if(rest.isEmpty) acc
+      else step(acc + rest.head, rest.tail)
+    }
+
+    step(0, values)
+  }
 
   /**
     * `fold` takes a list of integers and a concatenation function, so that
