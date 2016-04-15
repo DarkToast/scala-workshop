@@ -20,6 +20,8 @@ libraryDependencies += "com.twitter.finatra" %% "finatra-http" % "2.1.5"
 
 libraryDependencies += "joda-time" % "joda-time" % "2.9.2"
 
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.4.1"
+
 // Json serializerk
 libraryDependencies += "net.liftweb" %% "lift-json" % "2.6.3"
 

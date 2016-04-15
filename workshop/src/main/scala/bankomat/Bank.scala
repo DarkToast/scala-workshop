@@ -25,4 +25,10 @@ class Bank(private val safe: Safe) {
     accounts(accountNo) = accounts(accountNo).withdraw(amount)
     safe.persist(accounts.toMap)
   }
+
+  def transfer(from: String, to: String, amount: BigDecimal) = {
+    accounts(from) = accounts(from).withdraw(amount)
+    accounts(to) = accounts(to).deposit(amount)
+    safe.persist(accounts.toMap)
+  }
 }
