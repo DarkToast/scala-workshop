@@ -3,34 +3,55 @@ package http
 import com.twitter.finagle.http.Request
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.finatra.http.{Controller, HttpServer}
+import http.di.{Environment, RuntimeEnvironment}
+import http.shop.LineItem
+import net.liftweb.json.{Serialization, _}
 
-import scala.concurrent.Future
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
-object MyServerMain extends MyServer
+object ServerMain extends Server
 
-class MyServer extends HttpServer {
-
+class Server extends HttpServer {
   override val defaultFinatraHttpPort: String = ":8080"
 
   override protected def configureHttp(router: HttpRouter): Unit = {
-    router.add(new MyController)
+    router.add(new ShopController with RuntimeEnvironment)
   }
 }
 
-class MyController extends Controller {
+class ShopController extends Controller {
+  this: Environment =>
 
-  import com.twitter.bijection.Conversion._
-  import com.twitter.bijection.twitter_util.UtilBijections.twitter2ScalaFuture
-  import com.twitter.util.{Future => TwitterFuture}
+  implicit val formats = DefaultFormats
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+  get("/products") { request: Request =>
+    val search = request.params.getOrElse("search", "")
+    val resultF = Await.result(shop.search(search), Duration.Inf)
+    response.ok.json(resultF)
+  }
 
-  get("/foo") { request: Request =>
-    val myF: Future[String] = Future {
-      Thread.sleep(3000)
-      "Hallo Welt"
+  post("/orders") { request: Request =>
+    val items = Serialization.read[List[LineItem]](request.contentString)
+
+    val order = shop.placeOrder(items)
+    response.ok( Serialization.writePretty(order) )
+  }
+
+  get("/orders/:id") { request: Request =>
+    shop.getOrder(request.params("id")) match {
+      case Some(order) => response.ok.json(order)
+      case None => response.notFound
+    }
+  }
+
+  post("/supply") { request: Request =>
+    val items = Serialization.read[List[LineItem]](request.contentString)
+
+    items.foreach { item =>
+      warehouse.supply(item.product, item.count)
     }
 
-    myF.as[TwitterFuture[String]]
+    response.ok
   }
 }
