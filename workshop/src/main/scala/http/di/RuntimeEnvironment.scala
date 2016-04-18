@@ -1,7 +1,7 @@
 package http.di
 
-import http.shop.{Shop, ShopInstance}
-import http.shop.warehouse.{Warehouse, WarehouseInstance}
+import http.shop.Shop
+import http.shop.warehouse.Warehouse
 
 object ShopInstance extends Shop with RuntimeEnvironment
 object WarehouseInstance extends Warehouse
