@@ -61,5 +61,3 @@ class Warehouse {
     Billing(fulfilledLineItems, fulfilledLineItems.map(item => item.product.price * item.count).sum)
   }
 }
-
-object WarehouseInstance extends Warehouse

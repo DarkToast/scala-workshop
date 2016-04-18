@@ -32,5 +32,3 @@ class Shop {
 
   def getOrder(id: String): Option[Order] = orders.get(id)
 }
-
-object ShopInstance extends Shop with RuntimeEnvironment
