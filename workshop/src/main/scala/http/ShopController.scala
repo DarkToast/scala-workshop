@@ -1,24 +1,14 @@
 package http
 
 import com.twitter.finagle.http.Request
-import com.twitter.finatra.http.routing.HttpRouter
-import com.twitter.finatra.http.{Controller, HttpServer}
-import http.di.{Environment, RuntimeEnvironment}
+import com.twitter.finatra.http.Controller
+import http.di.Environment
 import http.shop.LineItem
 import net.liftweb.json.{Serialization, _}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-object ServerMain extends Server
-
-class Server extends HttpServer {
-  override val defaultFinatraHttpPort: String = ":8080"
-
-  override protected def configureHttp(router: HttpRouter): Unit = {
-    router.add(new ShopController with RuntimeEnvironment)
-  }
-}
 
 class ShopController extends Controller {
   this: Environment =>
@@ -29,6 +19,10 @@ class ShopController extends Controller {
     val search = request.params.getOrElse("search", "")
     val resultF = Await.result(shop.search(search), Duration.Inf)
     response.ok.json(resultF)
+  }
+
+  get("/orders") { request: Request =>
+    response.ok( Serialization.writePretty(shop.getOrders))
   }
 
   post("/orders") { request: Request =>

@@ -11,11 +11,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class Shop {
   this: Environment =>
 
-  val orders: mutable.Map[String, Order] = mutable.Map()
+  private val orders: mutable.Map[String, Order] = mutable.Map()
 
   def search(beginsWith: String): Future[List[Product]] = {
     warehouse.products.map{ list =>
-      list.filter(product => beginsWith.isEmpty || product.name.startsWith(beginsWith))
+      if(beginsWith.isEmpty) list
+      else list.filter(product => product.name.startsWith(beginsWith))
     }
   }
 
@@ -31,4 +32,6 @@ class Shop {
   }
 
   def getOrder(id: String): Option[Order] = orders.get(id)
+
+  def getOrders: List[Order] = orders.values.toList
 }

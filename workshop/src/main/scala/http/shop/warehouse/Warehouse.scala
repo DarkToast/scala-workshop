@@ -33,20 +33,20 @@ class Warehouse {
     def fulfillLineItem(item: LineItem): Option[LineItem] = {
       val productId = item.product.id
 
-      if (store.keySet.contains(productId)) {
-        store.synchronized {
-          val storeItem = store(productId)
-          if (storeItem.count > item.count) {
-            store(productId) = storeItem.copy(count = storeItem.count - item.count)
-            Some(item)
-          } else {
-            store - productId
-            Some(item.copy(count = storeItem.count))
+      store.synchronized {
+        val optStoreItem = if (store.keySet.contains(productId)) Some(store(productId)) else None
+
+        optStoreItem
+          .filter(storeItem => storeItem.product.equals(item.product))
+          .map { storeItem =>
+            if (storeItem.count > item.count) {
+              store(productId) = storeItem.copy(count = storeItem.count - item.count)
+              item
+            } else {
+              store - productId
+              item.copy(count = storeItem.count)
+            }
           }
-        }
-      }
-      else {
-        None
       }
     }
 
@@ -56,7 +56,6 @@ class Warehouse {
       .map(item => fulfillLineItem(item))
       .filter(_.isDefined)
       .map(_.get)
-
 
     Billing(fulfilledLineItems, fulfilledLineItems.map(item => item.product.price * item.count).sum)
   }
