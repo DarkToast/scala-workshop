@@ -8,13 +8,18 @@ object Introduction {
     val system: ActorSystem = ActorSystem.create("Example")
 
     val consumer: ActorRef = system.actorOf(Props[Consumer])
-
-    val producerRouter: ActorRef = system.actorOf(RoundRobinPool(3).props(Props(new Producer(consumer))), "router")
     val producer: ActorRef = system.actorOf(Props(new Producer(consumer)))
+
+
+//    val poolSize = 3
+//    val producerRouter: ActorRef = system.actorOf(RoundRobinPool(poolSize).props(Props(new Producer(consumer))), "router")
+
 
     for(i <- 0 to 20) {
       producer ! "Start"
     }
+
+
   }
 }
 
