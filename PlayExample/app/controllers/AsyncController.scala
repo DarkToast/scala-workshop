@@ -5,7 +5,7 @@ import javax.inject._
 import play.api._
 import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * This controller creates an `Action` that demonstrates how to write
@@ -29,13 +29,15 @@ class AsyncController @Inject() (actorSystem: ActorSystem)(implicit exec: Execut
    * a path of `/message`.
    */
   def message = Action.async {
-    getFutureMessage(1.second).map { msg => Ok(msg) }
+    getFutureMessage.map { msg => Ok(msg) }
   }
 
-  private def getFutureMessage(delayTime: FiniteDuration): Future[String] = {
-    val promise: Promise[String] = Promise[String]()
-    actorSystem.scheduler.scheduleOnce(delayTime) { promise.success("Hi!") }
-    promise.future
+  private def getFutureMessage: Future[String] = {
+    val future = Future{
+      Thread.sleep(1000)
+      "Hallo Welt"
+    }
+    future
   }
 
 }
